@@ -1,0 +1,7 @@
+version: "3.3"
+
+infra:
+    platform: linux/amd64
+    container_name: back
+    build: .
+    restart: always

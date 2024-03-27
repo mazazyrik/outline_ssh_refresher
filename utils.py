@@ -1,5 +1,15 @@
-import sys
+from outline_vpn import OutlineVPN
 
-sys.path.insert(
-    1, '/Users/chuvaevnikita/Dev/python/outline_ssh_refresher/outline-vpn-api')
-from outline_utils import delete_all_keys, get_new_key
+client = OutlineVPN(api_url="https://87.247.142.222:63164/CtykuO9_lRq6hgdCNjeFow",
+                    cert_sha256="8D876891BEE756FC2CF72E0683EA99807A860974F6976951D3942DFE7226BC9D")
+
+
+def get_new_key(name):
+    new_key = client.create_key()
+    client.rename_key(new_key.key_id, name)
+    return new_key
+
+
+def delete_all_keys():
+    for key in client.get_keys():
+        client.delete_key(key.key_id)
