@@ -31,8 +31,13 @@ def make_qr(data, name):
     return file_name
 
 
+db = {}
+
+
 def wake_up(update, context):
     chat = update.effective_chat
+    db.add(chat.chat_id)
+
     button = ReplyKeyboardMarkup([['/newssh']], resize_keyboard=True)
 
     context.bot.send_message(
