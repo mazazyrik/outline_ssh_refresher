@@ -7,7 +7,7 @@ db = [int(i) for i in f]
 
 
 def delete_keys():
-    print(True)
+    delete_all_keys()
     for id in set(db):
         print(id)
         bot.send_message(
@@ -16,7 +16,7 @@ def delete_keys():
         )
 
 
-schedule.every(1).sunday.at("21:00").do(delete_all_keys)
+schedule.every(1).sunday.at("21:00").do(delete_keys)
 
 while True:
     schedule.run_pending()
