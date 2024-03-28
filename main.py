@@ -5,6 +5,7 @@ from telegram import Bot, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, Updater
 
 from utils import get_new_key
+from transfer_to_db import add_to_db
 
 TOKEN = '7165923004:AAEwtK6AYDj5iFVkse5mkXRMFzgZy_zYt9k'
 update = Updater(TOKEN)
@@ -31,12 +32,8 @@ def make_qr(data, name):
     return file_name
 
 
-db = {}
-
-
 def wake_up(update, context):
     chat = update.effective_chat
-    db.add(chat.chat_id)
 
     button = ReplyKeyboardMarkup([['/newssh']], resize_keyboard=True)
 
@@ -47,6 +44,7 @@ def wake_up(update, context):
         ),
         reply_markup=button
     )
+    add_to_db(chat.id)
 
 
 def new_ssh(update, context):
@@ -76,6 +74,7 @@ def main():
 
     updater.dispatcher.add_handler(CommandHandler('start', wake_up))
     updater.dispatcher.add_handler(CommandHandler('newssh', new_ssh))
+    bot.send_message(387435447, 'Бот запущен')
 
     updater.start_polling()
     updater.idle()
