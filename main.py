@@ -2,13 +2,11 @@ import os
 
 import qrcode
 from telegram import Bot, ReplyKeyboardMarkup
-from telegram.ext import (
-    CommandHandler, Updater, MessageHandler, Filters,
-    ConversationHandler
-)
+from telegram.ext import (CommandHandler, ConversationHandler, Filters,
+                          MessageHandler, Updater)
 
-from utils import get_new_key, get_all_keys, delete_key, all_keys_str
 from transfer_to_db import add_to_db
+from utils import all_keys_str, delete_key, get_all_keys, get_new_key
 
 TOKEN = '7165923004:AAEwtK6AYDj5iFVkse5mkXRMFzgZy_zYt9k'
 DELETE_KEY = 1
@@ -99,14 +97,21 @@ def admin(update, context):
             text='Привет, Никита! Вот тебе твои инструменты',
             reply_markup=keys_button
         )
+    else:
+        context.bot.send_message(
+            chat_id=chat.id,
+            text='Вы не админ бе бе бе',
+        )
 
 
 def all_keys(update, context):
     chat = update.effective_chat
+    if chat.id == 387435447:
+        all_keys = all_keys_str()
 
-    all_keys = all_keys_str()
-
-    context.bot.send_message(chat_id=chat.id, text=all_keys)
+        context.bot.send_message(chat_id=chat.id, text=all_keys)
+    else:
+        context.bot.send_message(chat_id=chat.id, text='Руки прочь!')
 
 
 def cancel(update, context):
@@ -118,12 +123,17 @@ def cancel(update, context):
 
 
 def delete_smbd_key(update, context):
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="Напишите ник пользователя, чей ключ надо удалить"
-    )
+    chat = update.effective_chat
+    if chat.id == 387435447:
 
-    return DELETE_KEY
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Напишите ник пользователя, чей ключ надо удалить"
+        )
+
+        return DELETE_KEY
+    else:
+        context.bot.send_message(chat_id=chat.id, text='Руки прочь!')
 
 
 def handle_new_message(update, context):
@@ -139,12 +149,12 @@ def handle_new_message(update, context):
             chat_id=update.effective_chat.id,
             text='Такого пользователя нет!'
         )
-    # return ConversationHandler.END
+    return ConversationHandler.END
 
 
 conversation_handler = ConversationHandler(
     entry_points=[MessageHandler(
-        ~Filters.command, delete_smbd_key)],
+        ~Filters.command, handle_new_message)],
     states={
         DELETE_KEY: [MessageHandler(
             Filters.text & ~Filters.command, handle_new_message

@@ -1,6 +1,7 @@
 import schedule
-from utils import delete_all_keys
+
 from main import bot
+from utils import delete_all_keys
 
 f = open('db.txt', 'r')
 db = [int(i) for i in f]
