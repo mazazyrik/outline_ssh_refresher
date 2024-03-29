@@ -4,8 +4,9 @@ import qrcode
 from telegram import Bot, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, Updater
 
-from utils import get_new_key
+from utils import get_new_key, get_all_keys
 from transfer_to_db import add_to_db
+from exceptions import UserAlreadyHasKey
 
 TOKEN = '7165923004:AAEwtK6AYDj5iFVkse5mkXRMFzgZy_zYt9k'
 update = Updater(TOKEN)
@@ -51,6 +52,13 @@ def new_ssh(update, context):
     chat = update.effective_chat
     name = update.message.chat.first_name
 
+# untested
+    all_keys = get_all_keys()
+    if (name in all_keys) or chat.id != 387435447:
+        raise UserAlreadyHasKey(
+            f'{name} уже имеет ключ! вы не можете иметь несколько ключей'
+        )
+
     ssh = get_new_key(name)
 
     qr = make_qr(ssh.access_url, name)
@@ -67,6 +75,31 @@ def new_ssh(update, context):
 
     context.bot.send_photo(chat.id, open(qr, 'rb'))
     os.remove(qr)
+
+# untested
+
+
+def admin(update, context):
+    chat = update.effective_chat
+
+    if chat.id == 387435447:
+        keys_button = ReplyKeyboardMarkup([['/allkeys']], resize_keyboard=True)
+
+        context.bot.send_message(
+            chat_id=chat.id,
+            text='Привет, Никита! Вот тебе твои инструменты',
+            button=keys_button
+        )
+
+
+def all_keys(update, context):
+    chat = update.effective_chat
+
+    all_keys = ''
+    for name in get_all_keys():
+        all_keys += f'{name}, '
+
+    context.bot.send_message(chat_id=chat.id, text=all_keys)
 
 
 def main():

@@ -13,3 +13,7 @@ def get_new_key(name):
 def delete_all_keys():
     for key in client.get_keys():
         client.delete_key(key.key_id)
+
+
+def get_all_keys():
+    return [key.name for key in client.get_keys()]

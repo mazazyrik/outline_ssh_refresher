@@ -1,0 +1,2 @@
+class UserAlreadyHasKey(Exception):
+    pass
