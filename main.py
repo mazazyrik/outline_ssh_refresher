@@ -2,12 +2,18 @@ import os
 
 import qrcode
 from telegram import Bot, ReplyKeyboardMarkup
-from telegram.ext import CommandHandler, Updater
+from telegram.ext import (
+    CommandHandler, Updater, MessageHandler, Filters,
+    ConversationHandler
+)
 
-from utils import get_new_key
+from utils import get_new_key, get_all_keys, delete_key, all_keys_str
 from transfer_to_db import add_to_db
 
 TOKEN = '7165923004:AAEwtK6AYDj5iFVkse5mkXRMFzgZy_zYt9k'
+DELETE_KEY = 1
+
+
 update = Updater(TOKEN)
 
 bot = Bot(TOKEN)
@@ -35,7 +41,9 @@ def make_qr(data, name):
 def wake_up(update, context):
     chat = update.effective_chat
 
-    button = ReplyKeyboardMarkup([['/newssh']], resize_keyboard=True)
+    button = ReplyKeyboardMarkup(
+        [['/newssh'], ['/admin']], resize_keyboard=True
+    )
 
     context.bot.send_message(
         chat_id=chat.id,
@@ -51,22 +59,99 @@ def new_ssh(update, context):
     chat = update.effective_chat
     name = update.message.chat.first_name
 
-    ssh = get_new_key(name)
+    all_keys = get_all_keys()
+    if name not in all_keys:
 
-    qr = make_qr(ssh.access_url, name)
+        ssh = get_new_key(name)
 
+        qr = make_qr(ssh.access_url, name)
+
+        context.bot.send_message(
+            chat_id=chat.id,
+            text='Бро, держи твой ключ, ты этого заслужил'
+        )
+
+        context.bot.send_message(
+            chat_id=chat.id,
+            text=ssh.access_url
+        )
+
+        context.bot.send_photo(chat.id, open(qr, 'rb'))
+        os.remove(qr)
+    else:
+        context.bot.send_message(
+            chat_id=chat.id,
+            text=(
+                f'{name} уже имеет ключ! вы не можете иметь несколько ключей'
+            )
+        )
+
+
+def admin(update, context):
+    chat = update.effective_chat
+
+    if chat.id == 387435447:
+        keys_button = ReplyKeyboardMarkup(
+            [['/allkeys'], ['/deletekey'], ['/start']], resize_keyboard=True)
+
+        context.bot.send_message(
+            chat_id=chat.id,
+            text='Привет, Никита! Вот тебе твои инструменты',
+            reply_markup=keys_button
+        )
+
+
+def all_keys(update, context):
+    chat = update.effective_chat
+
+    all_keys = all_keys_str()
+
+    context.bot.send_message(chat_id=chat.id, text=all_keys)
+
+
+def cancel(update, context):
     context.bot.send_message(
-        chat_id=chat.id,
-        text='Бро, держи твой ключ, ты этого заслужил'
+        chat_id=update.effective_chat.id,
+        text="Операция отменена. Чтобы удалить другой ключ, повторите команду."
+    )
+    return ConversationHandler.END
+
+
+def delete_smbd_key(update, context):
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Напишите ник пользователя, чей ключ надо удалить"
     )
 
-    context.bot.send_message(
-        chat_id=chat.id,
-        text=ssh.access_url
-    )
+    return DELETE_KEY
 
-    context.bot.send_photo(chat.id, open(qr, 'rb'))
-    os.remove(qr)
+
+def handle_new_message(update, context):
+    name = update.message.text
+    status = delete_key(name)
+    if status:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=f'Ключ пользователя {name} успешно удален!'
+        )
+    else:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Такого пользователя нет!'
+        )
+    # return ConversationHandler.END
+
+
+conversation_handler = ConversationHandler(
+    entry_points=[MessageHandler(
+        ~Filters.command, delete_smbd_key)],
+    states={
+        DELETE_KEY: [MessageHandler(
+            Filters.text & ~Filters.command, handle_new_message
+        )],
+    },
+    fallbacks=[CommandHandler('cancel', cancel)],
+)
 
 
 def main():
@@ -74,6 +159,12 @@ def main():
 
     updater.dispatcher.add_handler(CommandHandler('start', wake_up))
     updater.dispatcher.add_handler(CommandHandler('newssh', new_ssh))
+    updater.dispatcher.add_handler(CommandHandler('admin', admin))
+    updater.dispatcher.add_handler(CommandHandler('allkeys', all_keys))
+    updater.dispatcher.add_handler(
+        CommandHandler('deletekey', delete_smbd_key))
+    updater.dispatcher.add_handler(conversation_handler)
+
     bot.send_message(387435447, 'Бот запущен')
 
     updater.start_polling()
