@@ -8,13 +8,14 @@ from telegram.ext import (CommandHandler, ConversationHandler, Filters,
 from transfer_to_db import add_to_db
 from utils import all_keys_str, delete_key, get_all_keys, get_new_key
 
-TOKEN = '7165923004:AAEwtK6AYDj5iFVkse5mkXRMFzgZy_zYt9k'
+TOKEN = '7149556054:AAFPIKcoj97DvflYdaCVlFtbNRJb4QKb87I'
 DELETE_KEY = 1
 
 
 update = Updater(TOKEN)
 
 bot = Bot(TOKEN)
+ALL_KEYS = get_all_keys()
 
 
 def make_qr(data, name):
@@ -38,6 +39,7 @@ def make_qr(data, name):
 
 def wake_up(update, context):
     chat = update.effective_chat
+    name = update.message.chat.first_name
 
     button = ReplyKeyboardMarkup(
         [['/newssh'], ['/admin']], resize_keyboard=True
@@ -50,15 +52,27 @@ def wake_up(update, context):
         ),
         reply_markup=button
     )
-    add_to_db(chat.id)
+    if name not in ALL_KEYS:
+        context.bot.send_video(
+            chat_id=chat.id,
+            video=open('inst.MP4', 'rb'),
+            supports_streaming=True
+        )
+        add_to_db(chat.id)
+        context.bot.send_message(
+            chat_id=chat.id,
+            text=(
+                'Невероятная инструкция выше!'
+            ),
+            reply_markup=button
+        )
 
 
 def new_ssh(update, context):
     chat = update.effective_chat
     name = update.message.chat.first_name
 
-    all_keys = get_all_keys()
-    if name not in all_keys:
+    if name not in ALL_KEYS:
 
         ssh = get_new_key(name)
 
@@ -107,9 +121,8 @@ def admin(update, context):
 def all_keys(update, context):
     chat = update.effective_chat
     if chat.id == 387435447:
-        all_keys = all_keys_str()
 
-        context.bot.send_message(chat_id=chat.id, text=all_keys)
+        context.bot.send_message(chat_id=chat.id, text=all_keys_str())
     else:
         context.bot.send_message(chat_id=chat.id, text='Руки прочь!')
 
