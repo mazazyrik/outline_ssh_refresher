@@ -30,7 +30,6 @@ def delete_key(name):
             return True
 
 
-
 def all_keys_str():
     all_keys = ''
     for name in get_all_keys():
