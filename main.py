@@ -8,7 +8,7 @@ from telegram.ext import (CommandHandler, ConversationHandler, Filters,
 from transfer_to_db import add_to_db
 from utils import all_keys_str, delete_key, get_all_keys, get_new_key
 
-TOKEN = '7149556054:AAFPIKcoj97DvflYdaCVlFtbNRJb4QKb87I'
+TOKEN = '7165923004:AAEwtK6AYDj5iFVkse5mkXRMFzgZy_zYt9k'
 DELETE_KEY = 1
 
 
