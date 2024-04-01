@@ -15,7 +15,6 @@ DELETE_KEY = 1
 update = Updater(TOKEN)
 
 bot = Bot(TOKEN)
-ALL_KEYS = get_all_keys()
 
 
 def make_qr(data, name):
@@ -52,7 +51,7 @@ def wake_up(update, context):
         ),
         reply_markup=button
     )
-    if name not in ALL_KEYS:
+    if name not in get_all_keys():
         context.bot.send_video(
             chat_id=chat.id,
             video=open('inst.MP4', 'rb'),
@@ -72,7 +71,7 @@ def new_ssh(update, context):
     chat = update.effective_chat
     name = update.message.chat.first_name
 
-    if name not in ALL_KEYS:
+    if name not in get_all_keys():
 
         ssh = get_new_key(name)
 
