@@ -71,7 +71,8 @@ def new_ssh(update, context):
     chat = update.effective_chat
     name = update.message.chat.first_name
 
-    if name not in get_all_keys():
+    if name not in get_all_keys() or name == 'Yana':
+        # this made for users with similar nicknames
 
         ssh = get_new_key(name)
 
