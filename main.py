@@ -1,15 +1,20 @@
 import os
 
 import qrcode
+from dotenv import load_dotenv
 from telegram import Bot, ReplyKeyboardMarkup
 from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 
-from transfer_to_db import add_to_db
+from db_connect import save_id
 from utils import all_keys_str, delete_key, get_all_keys, get_new_key
 
-TOKEN = '7165923004:AAEwtK6AYDj5iFVkse5mkXRMFzgZy_zYt9k'
+load_dotenv()
+
+# TOKEN = os.getenv('TOKEN')
+TOKEN = os.getenv('TEST_TOKEN')
 DELETE_KEY = 1
+ADMIN_ID = os.getenv('ADMIN_ID')
 
 
 update = Updater(TOKEN)
@@ -18,6 +23,9 @@ bot = Bot(TOKEN)
 
 
 def make_qr(data, name):
+    '''
+    Makes a relevant qr from collected key.
+    '''
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -37,6 +45,9 @@ def make_qr(data, name):
 
 
 def wake_up(update, context):
+    '''
+    Start func, sends an intro message and video insrtuction.
+    '''
     chat = update.effective_chat
     name = update.message.chat.first_name
 
@@ -54,10 +65,9 @@ def wake_up(update, context):
     if name not in get_all_keys():
         context.bot.send_video(
             chat_id=chat.id,
-            video=open('inst.MP4', 'rb'),
+            video=open('static/inst.MP4', 'rb'),
             supports_streaming=True
         )
-        add_to_db(chat.id)
         context.bot.send_message(
             chat_id=chat.id,
             text=(
@@ -65,14 +75,18 @@ def wake_up(update, context):
             ),
             reply_markup=button
         )
+    save_id(chat.id)
 
 
 def new_ssh(update, context):
+    '''
+    Sends new relevant key and names ssh as the name of user.
+    '''
     chat = update.effective_chat
     name = update.message.chat.first_name
 
     if name not in get_all_keys() or name == 'Yana':
-        # this made for users with similar nicknames
+        # this made for users with similar nicknames for only my own case
 
         ssh = get_new_key(name)
 
@@ -100,9 +114,12 @@ def new_ssh(update, context):
 
 
 def admin(update, context):
+    '''
+    Provides admin instruments.
+    '''
     chat = update.effective_chat
 
-    if chat.id == 387435447:
+    if chat.id == ADMIN_ID:
         keys_button = ReplyKeyboardMarkup(
             [['/allkeys'], ['/deletekey'], ['/start']], resize_keyboard=True)
 
@@ -119,8 +136,11 @@ def admin(update, context):
 
 
 def all_keys(update, context):
+    '''
+    Sends all avalible keys.
+    '''
     chat = update.effective_chat
-    if chat.id == 387435447:
+    if chat.id == ADMIN_ID:
 
         context.bot.send_message(chat_id=chat.id, text=all_keys_str())
     else:
@@ -128,6 +148,9 @@ def all_keys(update, context):
 
 
 def cancel(update, context):
+    '''
+    Cancels deleting
+    '''
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="Операция отменена. Чтобы удалить другой ключ, повторите команду."
@@ -136,8 +159,11 @@ def cancel(update, context):
 
 
 def delete_smbd_key(update, context):
+    '''
+    Collects a name, which key must be deleted
+    '''
     chat = update.effective_chat
-    if chat.id == 387435447:
+    if chat.id == ADMIN_ID:
 
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -150,6 +176,9 @@ def delete_smbd_key(update, context):
 
 
 def handle_new_message(update, context):
+    '''
+    Delets a key via the name.
+    '''
     name = update.message.text
     status = delete_key(name)
     if status:
@@ -178,6 +207,9 @@ conversation_handler = ConversationHandler(
 
 
 def main():
+    '''
+    Main bot func.
+    '''
     updater = Updater(TOKEN)
 
     updater.dispatcher.add_handler(CommandHandler('start', wake_up))
@@ -188,7 +220,7 @@ def main():
         CommandHandler('deletekey', delete_smbd_key))
     updater.dispatcher.add_handler(conversation_handler)
 
-    bot.send_message(387435447, 'Бот запущен')
+    bot.send_message(ADMIN_ID, 'Бот запущен')
 
     updater.start_polling()
     updater.idle()

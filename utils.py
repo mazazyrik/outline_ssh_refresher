@@ -1,29 +1,43 @@
+import os
+
+from dotenv import load_dotenv
+
 from outline_vpn import OutlineVPN
 
-client = OutlineVPN(api_url=(
-    "https://87.247.142.222:63164/CtykuO9_lRq6hgdCNjeFow"
-),
-    cert_sha256=(
-    "8D876891BEE756FC2CF72E0683EA99807A860974F6976951D3942DFE7226BC9D"
-))
+load_dotenv()
+
+client = OutlineVPN(api_url=os.getenv('API'),
+                    cert_sha256=os.getenv('SSH'))
 
 
-def get_new_key(name):
+def get_new_key(name: str):
+    '''
+    This func issues new key, and names it as client username.
+    '''
     new_key = client.create_key()
     client.rename_key(new_key.key_id, name)
     return new_key
 
 
 def delete_all_keys():
+    '''
+    This func deletes all keys.
+    '''
     for key in client.get_keys():
         client.delete_key(key.key_id)
 
 
 def get_all_keys():
+    '''
+    This func returns all keys, provided by server.
+    '''
     return [key.name for key in client.get_keys()]
 
 
-def delete_key(name):
+def delete_key(name: str):
+    '''
+    This func delete a key with provided name.
+    '''
     for key in client.get_keys():
         if key.name == name:
             client.delete_key(key.key_id)
@@ -31,7 +45,14 @@ def delete_key(name):
 
 
 def all_keys_str():
+    '''
+    This func returns all keys, as a str.
+    It is easier to send it as a message in bot.
+    '''
     all_keys = ''
-    for name in get_all_keys():
-        all_keys += f'{name}, '
+    for i, name in enumerate(get_all_keys()):
+        if i == len(get_all_keys())-1:
+            all_keys += f'{name}'
+        else:
+            all_keys += f'{name}, '
     return all_keys
