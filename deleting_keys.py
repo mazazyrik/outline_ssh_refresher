@@ -5,20 +5,21 @@ from main import bot
 from utils import delete_all_keys
 
 
-def delete_keys():
+def delete_keys() -> None:
     delete_all_keys()
+    print('work')
     db = get_ids()
-    for id in set(db):
-        print(id)
+    for id in set(*db):
         bot.send_message(
-            id,
-            'Все ключи удалены! Стоит задуматься о получении новых ключей.'
+            chat_id=id,
+            text=(
+                'Все ключи удалены! Стоит задуматься о получении новых ключей.'
+            )
         )
 
 
-schedule.every(1).sunday.at("21:00").do(delete_keys)
+schedule.every(1).monday.at("13:57").do(delete_keys)
 
-print(get_ids())
 
 while True:
     schedule.run_pending()
