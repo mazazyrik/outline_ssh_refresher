@@ -1,0 +1,30 @@
+version: "3.3"
+
+volumes:
+  outline_database:
+
+services:
+  database:
+    platform: linux/amd64
+    container_name: database
+    image: postgres:15.1-alpine
+    volumes:
+      - outline_database:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST=database
+      - PORT=5432
+
+
+  back:
+    platform: linux/amd64
+    container_name: back
+    # image: mazazyrik/outline_backend
+    build: ./.
+    restart: always
+    depends_on:
+      - database
+    env_file:
+      - ./.env

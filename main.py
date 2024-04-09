@@ -1,3 +1,4 @@
+import logging
 import os
 
 import qrcode
@@ -6,16 +7,16 @@ from telegram import Bot, ReplyKeyboardMarkup
 from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 
-from db_connect import save_id
-from utils import all_keys_str, delete_key, get_all_keys, get_new_key
+from db_connect import Database
+from utils import (all_keys_str, delete_key, get_all_keys, get_new_key,
+                   newsletter)
 
 load_dotenv()
 
-# TOKEN = os.getenv('TOKEN')
-TOKEN = os.getenv('TEST_TOKEN')
+TOKEN = os.getenv('TOKEN')
+# TOKEN = os.getenv('TEST_TOKEN')
 DELETE_KEY = 1
-ADMIN_ID = os.getenv('ADMIN_ID')
-
+ADMIN_ID = 387435447  # os.getenv('ADMIN_ID')
 
 update = Updater(TOKEN)
 
@@ -75,7 +76,7 @@ def wake_up(update, context):
             ),
             reply_markup=button
         )
-    save_id(chat.id)
+    Database().save_id(id=chat.id)
 
 
 def new_ssh(update, context):
@@ -121,7 +122,8 @@ def admin(update, context):
 
     if chat.id == ADMIN_ID:
         keys_button = ReplyKeyboardMarkup(
-            [['/allkeys'], ['/deletekey'], ['/start']], resize_keyboard=True)
+            [['/allkeys'], ['/deletekey'], ['/start'],
+             ['/sendnewsletter']], resize_keyboard=True)
 
         context.bot.send_message(
             chat_id=chat.id,
@@ -143,6 +145,15 @@ def all_keys(update, context):
     if chat.id == ADMIN_ID:
 
         context.bot.send_message(chat_id=chat.id, text=all_keys_str())
+    else:
+        context.bot.send_message(chat_id=chat.id, text='Руки прочь!')
+
+
+def send_newsletter(update, context):
+    chat = update.effective_chat
+    if chat.id == ADMIN_ID:
+        newsletter(context.bot)
+        context.bot.send_message(chat_id=chat.id, text='Рассылка отправлена!')
     else:
         context.bot.send_message(chat_id=chat.id, text='Руки прочь!')
 
@@ -211,6 +222,7 @@ def main():
     Main bot func.
     '''
     updater = Updater(TOKEN)
+    logging.info('Main bot script started')
 
     updater.dispatcher.add_handler(CommandHandler('start', wake_up))
     updater.dispatcher.add_handler(CommandHandler('newssh', new_ssh))
@@ -219,6 +231,8 @@ def main():
     updater.dispatcher.add_handler(
         CommandHandler('deletekey', delete_smbd_key))
     updater.dispatcher.add_handler(conversation_handler)
+    updater.dispatcher.add_handler(
+        CommandHandler('sendnewsletter', send_newsletter))
 
     bot.send_message(ADMIN_ID, 'Бот запущен')
 

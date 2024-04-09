@@ -1,7 +1,9 @@
+import logging
 import os
 
 from dotenv import load_dotenv
 
+from db_connect import Database
 from outline_vpn import OutlineVPN
 
 load_dotenv()
@@ -56,3 +58,18 @@ def all_keys_str():
         else:
             all_keys += f'{name}, '
     return all_keys
+
+
+def newsletter(bot) -> None:
+    logging.info('Newsletter started')
+    db = Database().get_ids()
+    for id in db:
+        bot.send_message(
+            chat_id=id,
+            text=(
+                'Всем привет! Заработала последняя и самая новая версия бота!'
+                'Теперь каждый раз бот будет предупреждать об удалении ключей '
+                'и о других новостях'
+            )
+        )
+    logging.info('Newslettter finished')
