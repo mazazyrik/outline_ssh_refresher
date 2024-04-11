@@ -8,9 +8,8 @@ from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 
 from db_connect import Database
-from utils import (all_keys_str, delete_key, get_all_keys, get_new_key,
-                   newsletter)
-
+from utils import all_keys_str, delete_key, get_all_keys, get_new_key
+ 
 load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
@@ -123,12 +122,16 @@ def admin(update, context):
 
     if chat.id == ADMIN_ID:
         keys_button = ReplyKeyboardMarkup(
-            [['/allkeys'], ['/deletekey'], ['/start'],
-             ['/sendnewsletter']], resize_keyboard=True)
+            [['/allkeys'], ['/start'],], resize_keyboard=True)
 
         context.bot.send_message(
             chat_id=chat.id,
-            text='Привет, Никита! Вот тебе твои инструменты',
+            text=(
+                'Привет, Никита! Вот тебе твои инструменты. '
+                'Также, ты можешь написать delete ... '
+                'или newsletter ..., чтобы удалить пользователя '
+                'или сделать рассылку'
+            ),
             reply_markup=keys_button
         )
     else:
@@ -150,13 +153,27 @@ def all_keys(update, context):
         context.bot.send_message(chat_id=chat.id, text='Руки прочь!')
 
 
-def send_newsletter(update, context):
+def send_newsletter(update, context, text=None):
+    """
+    Sends a newsletter to all users in the database.
+    If text is provided, it will be used as the newsletter message.
+    Otherwise, the user will be prompted to enter the newsletter message.
+    """
     chat = update.effective_chat
     if chat.id == ADMIN_ID:
-        newsletter(context.bot)
-        context.bot.send_message(chat_id=chat.id, text='Рассылка отправлена!')
+        users = Database().get_ids()
+        for user in users:
+            bot.send_message(
+                chat_id=chat.id,
+                text=text
+            )
+        bot.send_message(
+            chat_id=chat.id,
+            text="Рассылка отправлена!"
+        )
+        return ConversationHandler.END
     else:
-        context.bot.send_message(chat_id=chat.id, text='Руки прочь!')
+        update.message.reply_text('Руки прочь!')
 
 
 def cancel(update, context):
@@ -170,38 +187,34 @@ def cancel(update, context):
     return ConversationHandler.END
 
 
-def delete_smbd_key(update, context):
-    '''
-    Collects a name, which key must be deleted
-    '''
-    chat = update.effective_chat
-    if chat.id == ADMIN_ID:
-
-        context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="Напишите ник пользователя, чей ключ надо удалить"
-        )
-
-        return DELETE_KEY
-    else:
-        context.bot.send_message(chat_id=chat.id, text='Руки прочь!')
-
-
 def handle_new_message(update, context):
     '''
-    Delets a key via the name.
+    Delets a key via the name or sends a newsletter.
     '''
-    name = update.message.text
-    status = delete_key(name)
-    if status:
-        context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=f'Ключ пользователя {name} успешно удален!'
-        )
+    text = update.message.text.lower()
+    chat = update.effective_chat
+    if text.startswith('newsletter '):
+        send_newsletter(update, context, text[10:])
+    elif text.startswith('delete ') and chat.id == ADMIN_ID:
+        name = text[7:]
+        status = delete_key(name)
+        if status:
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=f'Ключ пользователя {name} успешно удален!'
+            )
+        else:
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text='Такого пользователя нет!'
+            )
     else:
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='Такого пользователя нет!'
+            text=(
+                'Неверная команда. Напишите "newsletter <текст>"'
+                ' для отправки рассылки или "delete <ник>" для удаления ключа.'
+            )
         )
     return ConversationHandler.END
 
@@ -229,8 +242,6 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('newssh', new_ssh))
     updater.dispatcher.add_handler(CommandHandler('admin', admin))
     updater.dispatcher.add_handler(CommandHandler('allkeys', all_keys))
-    updater.dispatcher.add_handler(
-        CommandHandler('deletekey', delete_smbd_key))
     updater.dispatcher.add_handler(conversation_handler)
     updater.dispatcher.add_handler(
         CommandHandler('sendnewsletter', send_newsletter))
