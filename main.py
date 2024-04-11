@@ -15,6 +15,7 @@ load_dotenv()
 TOKEN = os.getenv('TOKEN')
 # TOKEN = os.getenv('TEST_TOKEN')
 DELETE_KEY = 1
+
 ADMIN_ID = int(os.getenv('ADMIN_ID'))
 
 update = Updater(TOKEN)
