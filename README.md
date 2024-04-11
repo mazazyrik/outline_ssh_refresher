@@ -30,3 +30,6 @@ The application utilizes Python's logging module to provide information-level lo
 Integrate the provided Database class into your Telegram bot application to manage user IDs and interactions effectively. Customize the bot's functionality to generate SSH keys, QR codes, or other features based on your requirements.
 
 Feel free to expand upon this codebase and enhance the capabilities of your Outline SSH Refresher Bot according to your needs.
+
+# Thanks jadolg for wrapped API!
+link to original repo https://github.com/jadolg/outline-vpn-api
