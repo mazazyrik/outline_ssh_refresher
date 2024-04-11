@@ -164,7 +164,7 @@ def send_newsletter(update, context, text=None):
         users = Database().get_ids()
         for user in users:
             bot.send_message(
-                chat_id=chat.id,
+                chat_id=user,
                 text=text
             )
         bot.send_message(
