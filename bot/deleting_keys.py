@@ -1,7 +1,6 @@
 import logging
 
 import schedule
-
 from db_connect import Database
 from main import bot
 from utils import delete_all_keys

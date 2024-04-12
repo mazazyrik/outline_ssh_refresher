@@ -2,18 +2,17 @@ import logging
 import os
 
 import qrcode
+from db_connect import Database
 from dotenv import load_dotenv
 from telegram import Bot, ReplyKeyboardMarkup
 from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
-
-from db_connect import Database
 from utils import all_keys_str, delete_key, get_all_keys, get_new_key
 
 load_dotenv()
 
-TOKEN = os.getenv('TOKEN')
-# TOKEN = os.getenv('TEST_TOKEN')
+# TOKEN = os.getenv('TOKEN')
+TOKEN = os.getenv('TEST_TOKEN')
 DELETE_KEY = 1
 
 ADMIN_ID = int(os.getenv('ADMIN_ID'))
@@ -187,14 +186,31 @@ def cancel(update, context):
     return ConversationHandler.END
 
 
+def bug_report(update, context, text=None):
+    '''
+    Sends admin bug report message.
+    '''
+    context.bot.send_message(
+        chat_id=ADMIN_ID,
+        text=text
+    )
+
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Сообщение отправлено адимну! спасибо!'
+    )
+    return ConversationHandler.END
+
+
 def handle_new_message(update, context):
     '''
     Delets a key via the name or sends a newsletter.
     '''
-    text = update.message.text.lower()
+    text = update.message.text
     chat = update.effective_chat
-    if text.startswith('newsletter '):
+    if text.startswith('newsletter ') and chat.id == ADMIN_ID:
         send_newsletter(update, context, text[10:])
+        logging.info('отправлена рассылка')
     elif text.startswith('delete ') and chat.id == ADMIN_ID:
         name = text[7:]
         status = delete_key(name)
@@ -203,11 +219,16 @@ def handle_new_message(update, context):
                 chat_id=update.effective_chat.id,
                 text=f'Ключ пользователя {name} успешно удален!'
             )
+            logging.info('удален ключ')
         else:
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text='Такого пользователя нет!'
             )
+    elif text.startswith('bug '):
+        report = text[4:]
+        bug_report(update, context, report)
+        logging.info('Отправлено сообщение о баге')
     else:
         context.bot.send_message(
             chat_id=update.effective_chat.id,

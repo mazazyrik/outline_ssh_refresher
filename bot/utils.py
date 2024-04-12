@@ -1,9 +1,8 @@
 import logging
 import os
 
-from dotenv import load_dotenv
-
 from db_connect import Database
+from dotenv import load_dotenv
 from outline_vpn import OutlineVPN
 
 load_dotenv()
