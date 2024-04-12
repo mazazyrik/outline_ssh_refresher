@@ -11,8 +11,8 @@ from utils import all_keys_str, delete_key, get_all_keys, get_new_key
 
 load_dotenv()
 
-# TOKEN = os.getenv('TOKEN')
-TOKEN = os.getenv('TEST_TOKEN')
+TOKEN = os.getenv('TOKEN')
+# TOKEN = os.getenv('TEST_TOKEN')
 DELETE_KEY = 1
 
 ADMIN_ID = int(os.getenv('ADMIN_ID'))
