@@ -192,6 +192,10 @@ def bug_report(update, context, text=None):
     '''
     context.bot.send_message(
         chat_id=ADMIN_ID,
+        text=f'Сообщение от пользователя {update.effective_chat.first_name}'
+    )
+    context.bot.send_message(
+        chat_id=ADMIN_ID,
         text=text
     )
 
