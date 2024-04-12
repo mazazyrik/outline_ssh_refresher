@@ -229,7 +229,7 @@ def handle_new_message(update, context):
                 chat_id=update.effective_chat.id,
                 text='Такого пользователя нет!'
             )
-    elif text.startswith('bug '):
+    elif text.startswith('bug ') or text.startswith('Bug '):
         report = text[4:]
         bug_report(update, context, report)
         logging.info('Отправлено сообщение о баге')
