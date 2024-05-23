@@ -75,7 +75,6 @@ def wake_up(update, context):
             ),
             reply_markup=button
         )
-    Database().save_id(id=chat.id)
 
 
 def new_ssh(update, context):
@@ -84,6 +83,7 @@ def new_ssh(update, context):
     '''
     chat = update.effective_chat
     name = update.message.chat.first_name
+    Database().save_id(id=chat.id)
 
     if name not in get_all_keys() or name == 'Yana':
         # this made for users with similar nicknames for only my own case
