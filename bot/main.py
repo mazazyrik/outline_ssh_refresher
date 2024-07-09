@@ -85,7 +85,12 @@ def new_ssh(update, context):
     name = update.message.chat.first_name
     Database().save_id(id=chat.id)
 
-    if name not in get_all_keys() or name == 'Yana':
+    if name == 'Svetlana':
+        context.bot.send_message(
+            chat_id=chat.id,
+            text='Бот не работает'
+        )
+    elif name not in get_all_keys() or name == 'Yana':
         # this made for users with similar nicknames for only my own case
 
         ssh = get_new_key(name)
@@ -104,11 +109,6 @@ def new_ssh(update, context):
 
         context.bot.send_photo(chat.id, open(qr, 'rb'))
         os.remove(qr)
-    if name == 'Svetlana':
-        context.bot.send_message(
-            chat_id=chat.id,
-            text='Бот не работает'
-        )
     else:
         context.bot.send_message(
             chat_id=chat.id,

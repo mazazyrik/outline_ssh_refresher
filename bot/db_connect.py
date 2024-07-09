@@ -16,7 +16,7 @@ class Database:
         )
         self.cursor = self.conn.cursor()
         self.cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS users (ids INTEGER)''')
+            '''CREATE TABLE IF NOT EXISTS users (ids BIGINT)''')
         logging.info('connect success')
 
     def save_id(self, id: int) -> None:
