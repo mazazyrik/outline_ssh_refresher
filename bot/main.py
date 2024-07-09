@@ -104,6 +104,11 @@ def new_ssh(update, context):
 
         context.bot.send_photo(chat.id, open(qr, 'rb'))
         os.remove(qr)
+    if name == 'Svetlana':
+        context.bot.send_message(
+            chat_id=chat.id,
+            text='Бот не работает'
+        )
     else:
         context.bot.send_message(
             chat_id=chat.id,
