@@ -1,23 +1,21 @@
 import logging
 
-import psycopg2
+import sqlite3
 
 logging.basicConfig(level=logging.INFO)
 
 
 class Database:
     def __init__(self):
-        self.conn = psycopg2.connect(
-            dbname="postgres",
-            user="postgres",
-            password="postgres",
-            host="database",
-            port="5432"
-        )
+        self.conn = sqlite3.connect('your_database.db')
         self.cursor = self.conn.cursor()
+
         self.cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS users (ids BIGINT)''')
-        logging.info('connect success')
+            '''CREATE TABLE IF NOT EXISTS users (ids INTEGER PRIMARY KEY)'''
+        )
+
+        self.conn.commit()
+        logging.info('Connected to SQLite database successfully')
 
     def save_id(self, id: int) -> None:
         '''
