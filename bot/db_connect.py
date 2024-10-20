@@ -1,5 +1,4 @@
 import logging
-
 import sqlite3
 
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +20,7 @@ class Database:
         '''
         This method saves id in ids column.
         '''
-        self.cursor.execute('''INSERT INTO users (ids) VALUES (%s)''', (id,))
+        self.cursor.execute('''INSERT INTO users (ids) VALUES (?)''', (id,))
         self.conn.commit()
         logging.info(f'{id} saved to db.')
 
