@@ -16,17 +16,17 @@ class Database:
         self.conn.commit()
         logging.info('Connected to SQLite database successfully')
 
-
-def save_id(self, id: int) -> None:
-    '''
-    This method saves id in ids column.
-    '''
-    try:
-        self.cursor.execute('''INSERT INTO users (ids) VALUES (?)''', (id,))
-        self.conn.commit()
-        logging.info(f'{id} saved to db.')
-    except Exception as e:
-        logging.error(f'Error saving id {id}: {e}')
+    def save_id(self, id: int) -> None:
+        '''
+        This method saves id in ids column.
+        '''
+        try:
+            self.cursor.execute(
+                '''INSERT INTO users (ids) VALUES (?)''', (id,))
+            self.conn.commit()
+            logging.info(f'{id} saved to db.')
+        except Exception as e:
+            logging.error(f'Error saving id {id}: {e}')
 
     def get_ids(self) -> set[int]:
         '''
